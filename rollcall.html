@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生点名系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        h2 {
+            color: #3498db;
+            margin: 20px 0 15px;
+            font-size: 20px;
+            text-align: center;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .student-display {
+            margin: 25px 0;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        .student-id {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+        .student-name {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .rolling {
+            animation: rolling 0.5s infinite;
+        }
+        @keyframes rolling {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .answer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .answer-correct {
+            background-color: #e8f5e9;
+            border-left: 5px solid #27ae60;
+        }
+        .answer-wrong {
+            background-color: #ffebee;
+            border-left: 5px solid #c0392b;
+        }
+        .answer-none {
+            background-color: #fffde7;
+            border-left: 5px solid #f39c12;
+        }
+        .stats {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        .stats p {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .history-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item {
+            background: #f8f9fa;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+        }
+        .history-time {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .tabs {
+            display: flex;
+            margin: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+            font-weight: 500;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .date-selector {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .date-selector select {
+            width: auto;
+            margin-bottom: 0;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .student-name {
+                font-size: 28px;
+            }
+            .answer-buttons {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+            .date-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>学生点名系统</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('tab-current')">当前点名</div>
+            <div class="tab" onclick="switchTab('tab-history')">历史记录</div>
+        </div>
+        
+        <div id="tab-current" class="tab-content active">
+            <select id="classSelect" onchange="loadClass()">
+                <option value="S2521">S2521</option>
+                <option value="S2522">S2522</option>
+            </select>
+            
+            <div class="action-buttons">
+                <button onclick="startRollCall()">随机点名</button>
+                <button onclick="resetHistory()">重置记录</button>
+            </div>
+            
+            <div class="student-display">
+                <div class="student-id" id="studentId"></div>
+                <div class="student-name" id="studentName">点击上方按钮开始点名</div>
+            </div>
+            
+            <div class="answer-buttons">
+                <button onclick="recordAnswer('correct')" style="background-color: #27ae60;">回答正确</button>
+                <button onclick="recordAnswer('wrong')" style="background-color: #e74c3c;">回答错误</button>
+                <button onclick="recordAnswer('none')" style="background-color: #f39c12; color: #333;">未回答</button>
+            </div>
+            
+            <div class="stats">
+                <h2>班级统计</h2>
+                <p>正确: <span id="correct-count">0</span> | 错误: <span id="wrong-count">0</span> | 未回答: <span id="none-count">0</span></p>
+            </div>
+            
+            <h2>点名记录</h2>
+            <ul class="history-list" id="history"></ul>
+        </div>
+        
+        <div id="tab-history" class="tab-content">
+            <div class="date-selector">
+                <label for="historyDateSelect">选择日期:</label>
+                <select id="historyDateSelect" onchange="loadHistoryByDate()"></select>
+                <select id="historyClassSelect" onchange="loadHistoryByDate()">
+                    <option value="S2521">S2521</option>
+                    <option value="S2522">S2522</option>
+                </select>
+            </div>
+            
+            <div class="stats">
+                <h2>历史统计</h2>
+                <p>正确: <span id="history-correct-count">0</span> | 错误: <span id="history-wrong-count">0</span> | 未回答: <span id="history-none-count">0</span></p>
+            </div>
+            
+            <h2>历史记录</h2>
+            <ul class="history-list" id="history-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // 学生数据
+        const students = {
+            S2521: [
+                { id: '25013020101', name: '鄢婷' },
+                { id: '25013020102', name: '刘奕琦' },
+                { id: '25013020103', name: '王宇淇' },
+                { id: '25013020104', name: '叶名扬' },
+                { id: '25013020105', name: '李涛' },
+                { id: '25013020106', name: '任昱铭' },
+                { id: '25013020107', name: '吴佳明' },
+                { id: '25013020108', name: '张怡然' },
+                { id: '25013020109', name: '谢昊宇' },
+                { id: '25013020110', name: '徐良宇' },
+                { id: '25013020111', name: '张振' },
+                { id: '25013020112', name: '王翔' },
+                { id: '25013020113', name: '李祥盛' },
+                { id: '25013020114', name: '蔡铭睿' },
+                { id: '25013020115', name: '熊熠' },
+                { id: '25013020116', name: '沈欣如' },
+                { id: '25013020117', name: '薛嘉雯' },
+                { id: '25013020118', name: '程煜' },
+                { id: '25013020119', name: '黄竟涵' },
+                { id: '25013020120', name: '柯文翔' },
+                { id: '25013020121', name: '刘佳璇' },
+                { id: '25013020122', name: '巫嘉钰' },
+                { id: '25013020123', name: '冶鑫宇' },
+                { id: '25013020124', name: '黄孟轩' },
+                { id: '25013020125', name: '柏岫廷' },
+                { id: '25013020126', name: '曾祥岗' },
+                { id: '25013020127', name: '杨博' },
+                { id: '25013020128', name: '章宇馨' },
+                { id: '25013020129', name: '谭波' },
+                { id: '25013020130', name: '吴明庆' },
+                { id: '25013020131', name: '高宗泽' },
+                { id: '25013020132', name: '黄扬' },
+                { id: '25013020133', name: '王瑞敏' },
+                { id: '25013020134', name: '郭毅民' },
+                { id: '25013020135', name: '房鑫宇' },
+                { id: '25013020136', name: '窦文杰' },
+                { id: '25013020137', name: '石生龙' },
+                { id: '25013020138', name: '周旭安' },
+                { id: '25013020139', name: '赖程鑫' },
+                { id: '25013020140', name: '刘盈肖' }
+            ],
+            S2522: [
+                { id: '25013020201', name: '杨宇轩' },
+                { id: '25013020202', name: '朱格琬卿' },
+                { id: '25013020203', name: '董峻含' },
+                { id: '25013020204', name: '韩志伟' },
+                { id: '25013020205', name: '占尧博' },
+                { id: '25013020206', name: '宋昀鹏' },
+                { id: '25013020207', name: '许涵' },
+                { id: '25013020208', name: '邓亚航' },
+                { id: '25013020209', name: '卢殷孔喆' },
+                { id: '25013020210', name: '曾嘉乐' },
+                { id: '25013020211', name: '刘铭峻' },
+                { id: '25013020212', name: '蔡惠民' },
+                { id: '25013020213', name: '李嘉航' },
+                { id: '25013020214', name: '谢凌峰' },
+                { id: '25013020215', name: '刘钟缘' },
+                { id: '25013020216', name: '熊天喆' },
+                { id: '25013020217', name: '陈艳艳' },
+                { id: '25013020218', name: '张明浩' },
+                { id: '25013020219', name: '王徐浩' },
+                { id: '25013020220', name: '张子超' },
+                { id: '25013020221', name: '蔡依玲' },
+                { id: '25013020222', name: '熊志成' },
+                { id: '25013020223', name: '赖雨晨' },
+                { id: '25013020224', name: '徐婷' },
+                { id: '25013020225', name: '戴凯乐' },
+                { id: '25013020226', name: '陈昱珂' },
+                { id: '25013020227', name: '丁浩轩' },
+                { id: '25013020228', name: '黄宇杰' },
+                { id: '25013020229', name: '徐飞扬' },
+                { id: '25013020230', name: '杨庭辉' },
+                { id: '25013020231', name: '李仕鑫' },
+                { id: '25013020232', name: '吴雨诗' },
+                { id: '25013020233', name: '陈康杭' },
+                { id: '25013020234', name: '黄维勋' },
+                { id: '25013020235', name: '赵俊涛' },
+                { id: '25013020236', name: '吕洪旭' },
+                { id: '25013020237', name: '钟嘉诚' },
+                { id: '25013020238', name: '刘翔' },
+                { id: '25013020239', name: '邹湜歆' },
+                { id: '25013020240', name: '肖俊楠' },
+                { id: '25013020241', name: '梅鑫' },
+                { id: '25013020242', name: '肖亚松' },
+                { id: '25013020243', name: '刘涛' }
+            ]
+        };
+
+        // 全局变量
+        let currentClass = 'S2521';
+        let remainingStudents = [];
+        let callHistory = [];
+        let answerStats = {correct: 0, wrong: 0, none: 0};
+        let currentStudent = null;
+        let isRolling = false;
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            loadClass();
+            loadHistoryDates();
+        };
+        
+        // 切换标签页
+        function switchTab(tabId) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 取消所有标签的激活状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabId).classList.add('active');
+            
+            // 激活选中的标签
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            
+            // 如果切换到历史记录标签，加载历史记录
+            if (tabId === 'tab-history') {
+                loadHistoryByDate();
+            }
+        }
+        
+        // 加载班级
+        function loadClass() {
+            currentClass = document.getElementById('classSelect').value;
+            resetRollCall();
+            updateStats();
+            displayHistory();
+        }
+        
+        // 重置点名
+        function resetRollCall() {
+            remainingStudents = [...students[currentClass]];
+            currentStudent = null;
+            document.getElementById('studentId').textContent = '';
+            document.getElementById('studentName').textContent = '点击上方按钮开始点名';
+            document.getElementById('studentName').classList.remove('rolling');
+        }
+        
+        // 开始随机点名
+        function startRollCall() {
+            if (isRolling) return;
+            
+            if (remainingStudents.length === 0) {
+                alert('所有学生已经被点过名了，将重置点名列表');
+                resetRollCall();
+                if (remainingStudents.length === 0) return;
+            }
+            
+            isRolling = true;
+            document.getElementById('studentName').classList.add('rolling');
+            
+            // 随机显示效果
+            let count = 0;
+            const maxCount = 20;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * students[currentClass].length);
+                const randomStudent = students[currentClass][randomIndex];
+                document.getElementById('studentId').textContent = randomStudent.id;
+                document.getElementById('studentName').textContent = randomStudent.name;
+                
+                count++;
+                if (count >= maxCount) {
+                    clearInterval(interval);
+                    selectRandomStudent();
+                }
+            }, 100);
+        }
+        
+        // 选择随机学生
+        function selectRandomStudent() {
+            const randomIndex = Math.floor(Math.random() * remainingStudents.length);
+            currentStudent = remainingStudents[randomIndex];
+            remainingStudents.splice(randomIndex, 1);
+            
+            document.getElementById('studentId').textContent = currentStudent.id;
+            document.getElementById('studentName').textContent = currentStudent.name;
+            document.getElementById('studentName').classList.remove('rolling');
+            isRolling = false;
+        }
+        
+        // 记录回答
+        function recordAnswer(status) {
+            if (!currentStudent) {
+                alert('请先点名选择学生');
+                return;
+            }
+            
+            // 更新统计
+            answerStats[status]++;
+            updateStats();
+            
+            // 添加到历史记录
+            const timestamp = new Date();
+            const record = {
+                student: currentStudent,
+                status: status,
+                timestamp: timestamp
+            };
+            callHistory.push(record);
+            
+            // 保存到本地存储
+            saveHistory(record);
+            
+            // 显示历史记录
+            displayHistory();
+            
+            // 重置当前学生
+            currentStudent = null;
+            document.getElementById('studentId').textContent = '';
+            document.getElementById('studentName').textContent = '点击上方按钮开始点名';
+        }
+        
+        // 更新统计数据
+        function updateStats() {
+            document.getElementById('correct-count').textContent = answerStats.correct;
+            document.getElementById('wrong-count').textContent = answerStats.wrong;
+            document.getElementById('none-count').textContent = answerStats.none;
+        }
+        
+        // 显示历史记录
+        function displayHistory() {
+            const historyElement = document.getElementById('history');
+            historyElement.innerHTML = '';
+            
+            // 倒序显示历史记录
+            for (let i = callHistory.length - 1; i >= 0; i--) {
+                const record = callHistory[i];
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                
+                if (record.status === 'correct') {
+                    li.classList.add('answer-correct');
+                } else if (record.status === 'wrong') {
+                    li.classList.add('answer-wrong');
+                } else {
+                    li.classList.add('answer-none');
+                }
+                
+                const statusText = record.status === 'correct' ? '回答正确' : 
+                                  record.status === 'wrong' ? '回答错误' : '未回答';
+                
+                li.innerHTML = `
+                    <div>
+                        <strong>${record.student.name}</strong> (${record.student.id}) - ${statusText}
+                    </div>
+                    <div class="history-time">${formatTime(record.timestamp)}</div>
+                `;
+                
+                historyElement.appendChild(li);
+            }
+        }
+        
+        // 格式化时间
+        function formatTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 重置历史记录
+        function resetHistory() {
+            if (confirm('确定要重置所有点名记录吗？')) {
+                callHistory = [];
+                answerStats = {correct: 0, wrong: 0, none: 0};
+                updateStats();
+                displayHistory();
+            }
+        }
+        
+        // 保存历史记录到本地存储
+        function saveHistory(record) {
+            // 获取当前日期作为键
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 获取已有的历史记录
+            let history = JSON.parse(localStorage.getItem('rollcallHistory') || '{}');
+            
+            // 如果没有当天的记录，创建一个
+            if (!history[today]) {
+                history[today] = {};
+            }
+            
+            // 如果没有当前班级的记录，创建一个
+            if (!history[today][currentClass]) {
+                history[today][currentClass] = [];
+            }
+            
+            // 添加新记录
+            history[today][currentClass].push({
+                studentId: record.student.id,
+                studentName: record.student.name,
+                status: record.status,
+                timestamp: record.timestamp.toISOString()
+            });
+            
+            // 保存回本地存储
+            localStorage.setItem('rollcallHistory', JSON.stringify(history));
+            
+            // 更新历史日期选择器
+            loadHistoryDates();
+        }
+        
+        // 加载历史日期
+        function loadHistoryDates() {
+            const dateSelect = document.getElementById('historyDateSelect');
+            dateSelect.innerHTML = '';
+            
+            // 获取历史记录
+            const history = JSON.parse(localStorage.getItem('rollcallHistory') || '{}');
+            
+            // 获取所有日期并排序（最新的在前）
+            const dates = Object.keys(history).sort().reverse();
+            
+            // 如果没有历史记录
+            if (dates.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '没有历史记录';
+                dateSelect.appendChild(option);
+                return;
+            }
+            
+            // 添加日期选项
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                
+                // 格式化日期显示
+                const [year, month, day] = date.split('-');
+                option.textContent = `${year}年${month}月${day}日`;
+                
+                dateSelect.appendChild(option);
+            });
+            
+            // 默认选择最新的日期
+            dateSelect.value = dates[0];
+        }
+        
+        // 根据日期加载历史记录
+        function loadHistoryByDate() {
+            const dateSelect = document.getElementById('historyDateSelect');
+            const classSelect = document.getElementById('historyClassSelect');
+            const historyList = document.getElementById('history-list');
+            
+            // 清空历史列表
+            historyList.innerHTML = '';
+            
+            // 重置历史统计
+            const historyStats = {correct: 0, wrong: 0, none: 0};
+            
+            // 获取选择的日期和班级
+            const selectedDate = dateSelect.value;
+            const selectedClass = classSelect.value;
+            
+            // 如果没有选择日期
+            if (!selectedDate) {
+                document.getElementById('history-correct-count').textContent = '0';
+                document.getElementById('history-wrong-count').textContent = '0';
+                document.getElementById('history-none-count').textContent = '0';
+                return;
+            }
+            
+            // 获取历史记录
+            const history = JSON.parse(localStorage.getItem('rollcallHistory') || '{}');
+            
+            // 如果没有选择日期的记录或没有选择班级的记录
+            if (!history[selectedDate] || !history[selectedDate][selectedClass]) {
+                document.getElementById('history-correct-count').textContent = '0';
+                document.getElementById('history-wrong-count').textContent = '0';
+                document.getElementById('history-none-count').textContent = '0';
+                
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.textContent = '该日期/班级没有点名记录';
+                historyList.appendChild(li);
+                return;
+            }
+            
+            // 获取选择日期和班级的记录
+            const records = history[selectedDate][selectedClass];
+            
+            // 倒序显示历史记录
+            for (let i = records.length - 1; i >= 0; i--) {
+                const record = records[i];
+                
+                // 更新统计
+                historyStats[record.status]++;
+                
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                
+                if (record.status === 'correct') {
+                    li.classList.add('answer-correct');
+                } else if (record.status === 'wrong') {
+                    li.classList.add('answer-wrong');
+                } else {
+                    li.classList.add('answer-none');
+                }
+                
+                const statusText = record.status === 'correct' ? '回答正确' : 
+                                  record.status === 'wrong' ? '回答错误' : '未回答';
+                
+                const recordTime = new Date(record.timestamp);
+                
+                li.innerHTML = `
+                    <div>
+                        <strong>${record.studentName}</strong> (${record.studentId}) - ${statusText}
+                    </div>
+                    <div class="history-time">${formatTime(recordTime)}</div>
+                `;
+                
+                historyList.appendChild(li);
+            }
+            
+            // 更新历史统计
+            document.getElementById('history-correct-count').textContent = historyStats.correct;
+            document.getElementById('history-wrong-count').textContent = historyStats.wrong;
+            document.getElementById('history-none-count').textContent = historyStats.none;
+        }
+    </script>
+</body>
+</html>
